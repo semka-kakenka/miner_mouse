@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Мышь-шахтёр: Пещера сыра</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --panel: #16213e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        /* Главное меню */
+        #mainMenu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            color: #fff;
+        }
+
+        .menu-title {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ffcc00;
+            text-shadow: 0 0 20px rgba(255,200,0,0.5);
+            margin-bottom: 20px;
+        }
+
+        .menu-btn {
+            width: 280px;
+            padding: 18px;
+            font-size: 20px;
+            font-weight: bold;
+            border: 2px solid #ffcc00;
+            background: rgba(255,200,0,0.1);
+            color: #ffcc00;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .menu-btn:hover {
+            background: rgba(255,200,0,0.3);
+            transform: scale(1.05);
+        }
+
+        /* Редактор персонажа */
+        #editor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.95);
+            z-index: 2001;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            gap: 15px;
+        }
+
+        .editor-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .editor-label {
+            font-size: 18px;
+            color: #ffcc00;
+            font-weight: bold;
+        }
+
+        .color-options, .tail-options, .eye-options {
+            display: flex;
+            gap: 15px;
+        }
+
+        .color-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid #555;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .color-btn.selected {
+            border-color: #ffcc00;
+            box-shadow: 0 0 15px rgba(255,200,0,0.8);
+        }
+
+        .option-btn {
+            padding: 10px 20px;
+            border: 2px solid #666;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .option-btn.selected {
+            border-color: #ffcc00;
+            background: rgba(255,200,0,0.3);
+        }
+
+        #mouseNameInput {
+            padding: 10px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: 2px solid #ffcc00;
+            background: #1a1a2e;
+            color: #fff;
+            text-align: center;
+            width: 250px;
+        }
+
+        /* Меню игры */
+        #gameMenu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.95);
+            z-index: 2002;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            gap: 20px;
+        }
+
+        /* Настройки */
+        #settings {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.95);
+            z-index: 2003;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            gap: 20px;
+        }
+
+        .volume-slider {
+            width: 250px;
+            accent-color: #ffcc00;
+        }
+
+        .lang-btn {
+            padding: 12px 24px;
+            border: 2px solid #666;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        .lang-btn.selected {
+            border-color: #ffcc00;
+            background: rgba(255,200,0,0.3);
+        }
+
+        /* Мобильное управление */
+        #mobileControls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: none;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .mobile-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.4);
+            color: #fff;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .mobile-btn:active {
+            background: rgba(255,255,255,0.4);
+        }
+
+        #mobileJoystick {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            position: relative;
+            touch-action: none;
+        }
+
+        #joystickKnob {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,200,0,0.6);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .game-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .game-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: var(--panel);
+            padding: 12px 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            flex-wrap: wrap;
+            justify-content: center;
+            border: 2px solid #3a3a5c;
+            z-index: 10;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #e0d8c8;
+            font-weight: 600;
+            font-size: 15px;
+            white-space: nowrap;
+        }
+
+        .stat-icon {
+            font-size: 24px;
+        }
+
+        .stat-value {
+            background: #0d0d1a;
+            padding: 4px 12px;
+            border-radius: 20px;
+            color: #ffcc00;
+            font-weight: 700;
+            font-size: 16px;
+            min-width: 40px;
+            text-align: center;
+            border: 1px solid #444;
+        }
+
+        .backpack-full .stat-value {
+            color: #ff5555;
+            animation: pulse 0.6s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.12); }
+        }
+
+        canvas {
+            border-radius: 8px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+            border: 3px solid #3a3a5c;
+            max-width: 95vw;
+            max-height: 60vh;
+        }
+
+        .controls-hint {
+            color: #8888aa;
+            font-size: 13px;
+            text-align: center;
+            letter-spacing: 0.5px;
+            background: var(--panel);
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid #2a2a44;
+            z-index: 10;
+        }
+        .controls-hint span {
+            color: #ffcc00;
+            font-weight: 600;
+        }
+        .controls-hint .key {
+            display: inline-block;
+            background: #0d0d1a;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin: 0 2px;
+            border: 1px solid #555;
+            font-family: monospace;
+            font-weight: 700;
+            color: #ffcc00;
+        }
+
+        .cat-ending-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        @media (max-width: 768px) {
+            #mobileControls {
+                display: flex;
+            }
+            .controls-hint {
+                display: none;
+            }
+            .game-header {
+                padding: 8px 12px;
+                gap: 10px;
+            }
+            .stat {
+                font-size: 12px;
+            }
+            .stat-value {
+                font-size: 12px;
+                padding: 2px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Главное меню -->
+    <div id="mainMenu">
+        <div class="menu-title">🐭 Мышь-шахтёр</div>
+        <button class="menu-btn" onclick="openEditor()">🎨 Редактор персонажа</button>
+        <button class="menu-btn" onclick="openGameMenu()">🎮 Играть</button>
+        <button class="menu-btn" onclick="openSettings()">⚙️ Настройки</button>
+    </div>
+
+    <!-- Редактор персонажа -->
+    <div id="editor">
+        <div class="menu-title" style="font-size: 32px;">🎨 Редактор персонажа</div>
+
+        <div class="editor-section">
+            <div class="editor-label" data-lang="furColor">Цвет шерсти:</div>
+            <div class="color-options">
+                <div class="color-btn" style="background: #fff;" onclick="selectColor('white', this)" id="colorWhite"></div>
+                <div class="color-btn" style="background: #2a2a2a;" onclick="selectColor('black', this)" id="colorBlack"></div>
+                <div class="color-btn" style="background: #8B4513;" onclick="selectColor('brown', this)" id="colorBrown"></div>
+            </div>
+        </div>
+
+        <div class="editor-section">
+            <div class="editor-label" data-lang="tailType">Хвост:</div>
+            <div class="tail-options">
+                <button class="option-btn" onclick="selectTail('big', this)" id="tailBig">Большой</button>
+                <button class="option-btn" onclick="selectTail('small', this)" id="tailSmall">Маленький</button>
+                <button class="option-btn" onclick="selectTail('none', this)" id="tailNone">Нет хвоста</button>
+            </div>
+        </div>
+
+        <div class="editor-section">
+            <div class="editor-label" data-lang="eyeType">Глаза:</div>
+            <div class="eye-options">
+                <button class="option-btn" onclick="selectEyes('black', this)" id="eyesBlack">Чёрные</button>
+                <button class="option-btn" onclick="selectEyes('big', this)" id="eyesBig">Большие</button>
+                <button class="option-btn" onclick="selectEyes('red', this)" id="eyesRed">Красные</button>
+            </div>
+        </div>
+
+        <div class="editor-section">
+            <div class="editor-label" data-lang="mouseName">Имя мышонка:</div>
+            <input type="text" id="mouseNameInput" placeholder="Введите имя..." maxlength="15">
+        </div>
+
+        <button class="menu-btn" onclick="saveAndCloseEditor()">✅ Сохранить</button>
+    </div>
+
+    <!-- Меню игры -->
+    <div id="gameMenu">
+        <div class="menu-title">🎮 Выбор режима</div>
+        <button class="menu-btn" onclick="startSinglePlayer()">👤 Одиночная игра</button>
+        <button class="menu-btn" onclick="createServer()">🌐 Создать сервер</button>
+        <button class="menu-btn" onclick="closeGameMenu()">↩️ Назад</button>
+    </div>
+
+    <!-- Настройки -->
+    <div id="settings">
+        <div class="menu-title">⚙️ Настройки</div>
+
+        <div class="editor-section">
+            <div class="editor-label" data-lang="volume">Громкость:</div>
+            <input type="range" min="0" max="15" value="10" class="volume-slider" id="volumeSlider">
+            <span id="volumeValue">10</span>
+        </div>
+
+        <div class="editor-section">
+            <div class="editor-label" data-lang="language">Язык:</div>
+            <div>
+                <button class="lang-btn" onclick="setLanguage('ru', this)">🇷🇺 Русский</button>
+                <button class="lang-btn" onclick="setLanguage('en', this)">🇬🇧 English</button>
+                <button class="lang-btn" onclick="setLanguage('uk', this)">🇺🇦 Українська</button>
+                <button class="lang-btn" onclick="setLanguage('be', this)">🇧🇾 Беларуская</button>
+                <button class="lang-btn" onclick="setLanguage('zh', this)">🇨🇳 中文</button>
+            </div>
+        </div>
+
+        <button class="menu-btn" onclick="closeSettings()">↩️ Назад</button>
+    </div>
+
+    <div id="gameContainer" style="display: none;">
+        <div class="game-header" id="header">
+            <div class="stat"><span class="stat-icon">🐭</span><span id="mouseNameDisplay">Мышь-шахтёр</span></div>
+            <div class="stat" id="backpackStat">
+                <span class="stat-icon">🎒</span><span>Рюкзак:</span>
+                <span class="stat-value" id="backpackCount">0 / 20</span>
+            </div>
+            <div class="stat">
+                <span class="stat-icon">💰</span><span>Монеты:</span>
+                <span class="stat-value" id="coinDisplay">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-icon">💪</span><span>Сила:</span>
+                <span class="stat-value" id="strengthDisplay">1</span>
+            </div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div class="controls-hint">
+            <span class="key">←↑↓→</span> — движение/поворот &nbsp;|&nbsp;
+            <span class="key">E</span> — копать &nbsp;|&nbsp;
+            <span class="key">B</span> — магазин
+        </div>
+    </div>
+
+    <!-- Мобильное управление -->
+    <div id="mobileControls">
+        <div id="mobileJoystick">
+            <div id="joystickKnob"></div>
+        </div>
+        <button class="mobile-btn" id="mineBtn">⛏️</button>
+        <button class="mobile-btn" id="shopBtn">🏪</button>
+    </div>
+
+    <script>
+        // ────────────────────────────────────
+        // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ МЕНЮ
+        // ────────────────────────────────────
+        let mouseColor = 'white';
+        let mouseTail = 'big';
+        let mouseEyes = 'black';
+        let mouseName = 'Мышь-шахтёр';
+        let currentLanguage = 'ru';
+        let volume = 10;
+        let gameStarted = false;
+
+        // ────────────────────────────────────
+        // ФУНКЦИИ МЕНЮ
+        // ────────────────────────────────────
+        function openEditor() {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('editor').style.display = 'flex';
+            updateEditorSelection();
+        }
+
+        function updateEditorSelection() {
+            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
+            document.getElementById('color' + mouseColor.charAt(0).toUpperCase() + mouseColor.slice(1)).classList.add('selected');
+
+            document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+            if (mouseTail === 'big') document.getElementById('tailBig').classList.add('selected');
+            else if (mouseTail === 'small') document.getElementById('tailSmall').classList.add('selected');
+            else document.getElementById('tailNone').classList.add('selected');
+
+            if (mouseEyes === 'black') document.getElementById('eyesBlack').classList.add('selected');
+            else if (mouseEyes === 'big') document.getElementById('eyesBig').classList.add('selected');
+            else document.getElementById('eyesRed').classList.add('selected');
+        }
+
+        function selectColor(color, el) {
+            mouseColor = color;
+            updateEditorSelection();
+        }
+
+        function selectTail(type, el) {
+            mouseTail = type;
+            updateEditorSelection();
+        }
+
+        function selectEyes(type, el) {
+            mouseEyes = type;
+            updateEditorSelection();
+        }
+
+        function saveAndCloseEditor() {
+            mouseName = document.getElementById('mouseNameInput').value || 'Мышь-шахтёр';
+            document.getElementById('editor').style.display = 'none';
+            document.getElementById('mainMenu').style.display = 'flex';
+        }
+
+        function openGameMenu() {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('gameMenu').style.display = 'flex';
+        }
+
+        function closeGameMenu() {
+            document.getElementById('gameMenu').style.display = 'none';
+            document.getElementById('mainMenu').style.display = 'flex';
+        }
+
+        function startSinglePlayer() {
+            document.getElementById('gameMenu').style.display = 'none';
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'flex';
+            if (isMobile()) {
+                document.getElementById('mobileControls').style.display = 'flex';
+            }
+            gameStarted = true;
+            document.getElementById('mouseNameDisplay').textContent = mouseName;
+            startGame();
+        }
+
+        function createServer() {
+            alert('Сервер создан! (заглушка)\nПодключайтесь по IP: 127.0.0.1:7777');
+        }
+
+        function openSettings() {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('settings').style.display = 'flex';
+            document.getElementById('volumeSlider').value = volume;
+            document.getElementById('volumeValue').textContent = volume;
+        }
+
+        function closeSettings() {
+            document.getElementById('settings').style.display = 'none';
+            document.getElementById('mainMenu').style.display = 'flex';
+        }
+
+        function setLanguage(lang, el) {
+            currentLanguage = lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        document.getElementById('volumeSlider').addEventListener('input', function() {
+            volume = this.value;
+            document.getElementById('volumeValue').textContent = volume;
+        });
+
+        function isMobile() {
+            return /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent) || window.innerWidth < 768;
+        }
+
+        // ────────────────────────────────────
+        // ИГРОВОЙ КОД
+        // ────────────────────────────────────
+        function startGame() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const backpackCountEl = document.getElementById('backpackCount');
+            const coinDisplayEl = document.getElementById('coinDisplay');
+            const strengthDisplayEl = document.getElementById('strengthDisplay');
+            const backpackStatEl = document.getElementById('backpackStat');
+            const gameContainer = document.getElementById('gameContainer');
+
+            const MAP_W = 3200;
+            const MAP_H = 2200;
+            const W = 900;
+            const H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            const BASE_STRENGTH = 1;
+            const BASE_CAPACITY = 20;
+            const UPGRADE_BASE_COST = 30;
+            const UPGRADE_COST_MULT = 3;
+            const UPGRADE_MULTIPLIER = 5;
+
+            let gameEnded = false;
+            let endingType = 0;
+            let shopOpen = false;
+            let catActive = false;
+            let catPawX = 0, catPawY = 0;
+            let catPawProgress = 0;
+            let catPawVisible = false;
+            let catChaseSpeed = 0;
+            let catAlerted = false;
+            const MOUSE_VISION_RANGE = 250;
+
+            const camera = {
+                x: MAP_W / 2,
+                y: MAP_H / 2 + 40,
+                angle: Math.PI / 2,
+                fov: Math.PI / 3,
+            };
+
+            const mouse = {
+                radius: 16,
+                speed: 4,
+                backpack: 0,
+                coins: 0,
+                strength: BASE_STRENGTH,
+                maxBackpack: BASE_CAPACITY,
+                strengthLevel: 0,
+                capacityLevel: 0,
+                mining: false,
+                mineProgress: 0,
+                mineTarget: null,
+                mineMaxTime: 40,
+                pickaxeSwing: 0,
+                turnSpeed: 0.05,
+            };
+
+            const home = { x: MAP_W / 2, y: MAP_H / 2, radius: 30 };
+            const securityCamera = {
+                x: MAP_W / 2,
+                y: MAP_H / 2 - 120,
+                radius: 25,
+                active: true
+            };
+
+            let cheeseHealthMult = 1;
+            let cheeseDeposits = [];
+            const MAX_DEPOSITS = 20;
+            const DEPOSIT_RESPAWN_TIME = 280;
+            let depositRespawnTimers = [];
+            let stalactites = [];
+            const STALACTITE_COUNT = 30;
+            let totalCheeseBroken = 0;
+            let particles = [];
+            let floatingMessages = [];
+
+            const keys = {};
+            let eJustPressed = false;
+            let bJustPressed = false;
+
+            // Мобильное управление
+            let mobileJoystickActive = false;
+            let mobileJoystickDX = 0;
+            let mobileJoystickDY = 0;
+            let mobileMinePressed = false;
+            let mobileShopPressed = false;
+
+            function dist(x1, y1, x2, y2) {
+                return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+            }
+            function clamp(v, min, max) {
+                return Math.max(min, Math.min(max, v));
+            }
+            function addFloatingMessage(x, y, text, color = '#ffcc00') {
+                floatingMessages.push({ x, y, text, color, life: 55, maxLife: 55 });
+            }
+            function spawnParticles(x, y, count, color1, color2) {
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 1.5 + Math.random() * 4;
+                    particles.push({
+                        x, y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed - Math.random() * 2,
+                        life: 25 + Math.random() * 20,
+                        maxLife: 45,
+                        radius: 2 + Math.random() * 3.5,
+                        color: Math.random() < 0.5 ? color1 : color2,
+                    });
+                }
+            }
+            function getUpgradeCost(level) {
+                return UPGRADE_BASE_COST * Math.pow(UPGRADE_COST_MULT, level);
+            }
+            function recalcStats() {
+                mouse.strength = BASE_STRENGTH * Math.pow(UPGRADE_MULTIPLIER, mouse.strengthLevel);
+                mouse.maxBackpack = BASE_CAPACITY * Math.pow(UPGRADE_MULTIPLIER, mouse.capacityLevel);
+                cheeseHealthMult = Math.pow(UPGRADE_MULTIPLIER, mouse.strengthLevel);
+                strengthDisplayEl.textContent = mouse.strength;
+                backpackCountEl.textContent = mouse.backpack + ' / ' + mouse.maxBackpack;
+                if (mouse.backpack >= mouse.maxBackpack) {
+                    backpackStatEl.classList.add('backpack-full');
+                } else {
+                    backpackStatEl.classList.remove('backpack-full');
+                }
+            }
+            function getActiveDepositByType(type) {
+                return cheeseDeposits.find(d => d && d.active && d.type === type);
+            }
+
+            function generateStalactites() {
+                stalactites = [];
+                for (let i = 0; i < STALACTITE_COUNT; i++) {
+                    let x, y, r, overlap;
+                    do {
+                        overlap = false;
+                        x = 150 + Math.random() * (MAP_W - 300);
+                        y = 150 + Math.random() * (MAP_H - 300);
+                        r = 18 + Math.random() * 15;
+                        if (dist(x, y, home.x, home.y) < home.radius + r + 30) overlap = true;
+                        if (dist(x, y, securityCamera.x, securityCamera.y) < securityCamera.radius + r + 20) overlap = true;
+                        for (const s of stalactites) {
+                            if (dist(x, y, s.x, s.y) < r + s.radius + 15) overlap = true;
+                        }
+                    } while (overlap);
+                    stalactites.push({ x, y, radius: r });
+                }
+            }
+
+            function spawnDeposit(index, type = 'normal') {
+                let x, y, health, radius;
+                const margin = 150;
+                let attempts = 0;
+                do {
+                    x = margin + Math.random() * (MAP_W - margin * 2);
+                    y = margin + Math.random() * (MAP_H - margin * 2);
+                    attempts++;
+                    if (attempts > 500) break;
+                } while (
+                    dist(x, y, home.x, home.y) < 150 ||
+                    dist(x, y, securityCamera.x, securityCamera.y) < 100 ||
+                    cheeseDeposits.some((d, i) => i !== index && d && d.active && dist(x, y, d.x, d.y) < 70) ||
+                    stalactites.some(s => dist(x, y, s.x, s.y) < s.radius + 25)
+                );
+
+                if (type === 'normal') {
+                    health = (3 + Math.floor(Math.random() * 6)) * cheeseHealthMult;
+                    radius = 26;
+                } else if (type === 'big') {
+                    health = 12 * (3 + Math.floor(Math.random() * 6)) * cheeseHealthMult;
+                    radius = 38;
+                } else if (type === 'boss') {
+                    health = 36 * (3 + Math.floor(Math.random() * 6)) * cheeseHealthMult;
+                    radius = 50;
+                } else if (type === 'victory') {
+                    health = 1;
+                    radius = 28;
+                }
+
+                if (cheeseDeposits[index]) {
+                    Object.assign(cheeseDeposits[index], { x, y, active: true, health, maxHealth: health, radius, type, glowPhase: Math.random() * Math.PI * 2 });
+                } else {
+                    cheeseDeposits[index] = { x, y, active: true, health, maxHealth: health, radius, type, glowPhase: Math.random() * Math.PI * 2 };
+                    depositRespawnTimers[index] = 0;
+                }
+            }
+
+            function initDeposits() {
+                cheeseDeposits = [];
+                depositRespawnTimers = [];
+                for (let i = 0; i < MAX_DEPOSITS; i++) {
+                    cheeseDeposits[i] = null;
+                    depositRespawnTimers[i] = 0;
+                    spawnDeposit(i, 'normal');
+                }
+            }
+
+            function findNearestDeposit() {
+                let best = null;
+                let bestDist = Infinity;
+                for (let i = 0; i < cheeseDeposits.length; i++) {
+                    const d = cheeseDeposits[i];
+                    if (!d || !d.active || d.health <= 0) continue;
+                    const dd = dist(camera.x, camera.y, d.x, d.y);
+                    if (dd < d.radius + mouse.radius + 20 && dd < bestDist) {
+                        bestDist = dd;
+                        best = i;
+                    }
+                }
+                return best;
+            }
+
+            function checkSpecialSpawns() {
+                if (gameEnded) return;
+                if (totalCheeseBroken > 0 && totalCheeseBroken % 20 === 0 && !getActiveDepositByType('big')) {
+                    for (let i = 0; i < cheeseDeposits.length; i++) {
+                        if (!cheeseDeposits[i] || !cheeseDeposits[i].active) { spawnDeposit(i, 'big'); break; }
+                    }
+                }
+                if (totalCheeseBroken > 0 && totalCheeseBroken % 50 === 0 && !getActiveDepositByType('boss')) {
+                    for (let i = 0; i < cheeseDeposits.length; i++) {
+                        if (!cheeseDeposits[i] || !cheeseDeposits[i].active) { spawnDeposit(i, 'boss'); break; }
+                    }
+                }
+                if (totalCheeseBroken === 99 && !getActiveDepositByType('victory')) {
+                    for (let i = 0; i < cheeseDeposits.length; i++) {
+                        if (!cheeseDeposits[i] || !cheeseDeposits[i].active) { spawnDeposit(i, 'victory'); break; }
+                    }
+                }
+            }
+
+            function endGame(type) {
+                gameEnded = true;
+                endingType = type;
+                mouse.mining = false;
+                if (type === 2) showCatEnding();
+            }
+
+            function showCatEnding() {
+                gameContainer.style.display = 'none';
+                document.getElementById('mobileControls').style.display = 'none';
+                const overlay = document.createElement('div');
+                overlay.className = 'cat-ending-overlay';
+                overlay.id = 'catEndingOverlay';
+                overlay.innerHTML = `
+                    <div style="font-size: 60px;">🐱</div>
+                    <div style="color: #ff4444; font-size: 48px; font-weight: bold; text-shadow: 0 0 30px rgba(255,0,0,0.8);">ОН ТЕБЯ ДОГНАЛ</div>
+                    <div style="color: #aaa; margin-top: 30px; font-size: 18px;">Нажмите Q чтобы начать заново</div>
+                `;
+                document.body.appendChild(overlay);
+            }
+
+            function resetGame() {
+                gameEnded = false;
+                endingType = 0;
+                shopOpen = false;
+                camera.x = MAP_W / 2;
+                camera.y = MAP_H / 2 + 40;
+                camera.angle = Math.PI / 2;
+                mouse.backpack = 0;
+                mouse.coins = 0;
+                mouse.strengthLevel = 0;
+                mouse.capacityLevel = 0;
+                totalCheeseBroken = 0;
+                cheeseHealthMult = 1;
+                particles = [];
+                floatingMessages = [];
+                catActive = false;
+                catPawVisible = false;
+                catPawProgress = 0;
+                catChaseSpeed = 0;
+                catAlerted = false;
+                securityCamera.active = true;
+                mouse.pickaxeSwing = 0;
+                const overlay = document.getElementById('catEndingOverlay');
+                if (overlay) overlay.remove();
+                gameContainer.style.display = 'flex';
+                if (isMobile()) document.getElementById('mobileControls').style.display = 'flex';
+                recalcStats();
+                coinDisplayEl.textContent = '0';
+                initDeposits();
+                generateStalactites();
+            }
+
+            function update() {
+                if (gameEnded) return;
+
+                // Поворот камеры стрелками
+                if (keys['ArrowLeft']) camera.angle -= mouse.turnSpeed;
+                if (keys['ArrowRight']) camera.angle += mouse.turnSpeed;
+
+                // Мобильный джойстик для поворота
+                if (mobileJoystickActive) {
+                    camera.angle += mobileJoystickDX * 0.003;
+                }
+
+                while (camera.angle > Math.PI*2) camera.angle -= Math.PI*2;
+                while (camera.angle < 0) camera.angle += Math.PI*2;
+
+                // Движение вперёд/назад
+                let dx = 0, dy = 0;
+                if (keys['ArrowUp']) { dx += Math.cos(camera.angle); dy += Math.sin(camera.angle); }
+                if (keys['ArrowDown']) { dx -= Math.cos(camera.angle); dy -= Math.sin(camera.angle); }
+
+                // Мобильное движение
+                if (mobileJoystickActive) {
+                    dx += Math.cos(camera.angle) * (-mobileJoystickDY);
+                    dy += Math.sin(camera.angle) * (-mobileJoystickDY);
+                }
+
+                const len = Math.sqrt(dx*dx + dy*dy);
+                if (len > 0) { dx /= len; dy /= len; }
+
+                let newX = camera.x + dx * mouse.speed;
+                let newY = camera.y + dy * mouse.speed;
+                newX = clamp(newX, mouse.radius, MAP_W - mouse.radius);
+                newY = clamp(newY, mouse.radius, MAP_H - mouse.radius);
+
+                const distToHome = dist(newX, newY, home.x, home.y);
+                if (distToHome < home.radius + mouse.radius - 3) {
+                    const angle = Math.atan2(newY - home.y, newX - home.x);
+                    newX = home.x + Math.cos(angle) * (home.radius + mouse.radius - 2);
+                    newY = home.y + Math.sin(angle) * (home.radius + mouse.radius - 2);
+                }
+
+                for (const s of stalactites) {
+                    const d = dist(newX, newY, s.x, s.y);
+                    const minDist = s.radius + mouse.radius - 3;
+                    if (d < minDist) {
+                        const angle = Math.atan2(newY - s.y, newX - s.x);
+                        newX = s.x + Math.cos(angle) * minDist;
+                        newY = s.y + Math.sin(angle) * minDist;
+                    }
+                }
+
+                for (const dep of cheeseDeposits) {
+                    if (!dep || !dep.active || dep.health <= 0) continue;
+                    const d = dist(newX, newY, dep.x, dep.y);
+                    const minDist = dep.radius + mouse.radius - 4;
+                    if (d < minDist) {
+                        const angle = Math.atan2(newY - dep.y, newX - dep.x);
+                        newX = dep.x + Math.cos(angle) * minDist;
+                        newY = dep.y + Math.sin(angle) * minDist;
+                    }
+                }
+
+                camera.x = newX;
+                camera.y = newY;
+
+                // Камера наблюдения
+                if (securityCamera.active) {
+                    const distToCamera = dist(camera.x, camera.y, securityCamera.x, securityCamera.y);
+                    const angleToCamera = Math.atan2(securityCamera.y - camera.y, securityCamera.x - camera.x);
+                    let angleDiff = angleToCamera - camera.angle;
+                    while (angleDiff > Math.PI) angleDiff -= Math.PI*2;
+                    while (angleDiff < -Math.PI) angleDiff += Math.PI*2;
+
+                    if (distToCamera < securityCamera.radius + mouse.radius + 20 && Math.abs(angleDiff) < 0.3 && (eJustPressed || mobileMinePressed)) {
+                        securityCamera.active = false;
+                        catActive = true;
+                        catPawVisible = true;
+                        catPawX = securityCamera.x;
+                        catPawY = securityCamera.y;
+                        catPawProgress = 0;
+                        catAlerted = true;
+                        spawnParticles(securityCamera.x, securityCamera.y, 15, '#ff4444', '#ff0000');
+                        addFloatingMessage(securityCamera.x, securityCamera.y, 'Камера сломана!', '#ff4444');
+                    }
+                }
+
+                // Кот
+                if (catActive && !gameEnded) {
+                    if (catPawVisible) {
+                        catPawProgress += 0.02;
+                        if (catPawProgress >= 1) {
+                            catPawVisible = false;
+                            catChaseSpeed = 0.3;
+                        }
+                    }
+                    if (!catPawVisible && catChaseSpeed > 0) {
+                        const dx2 = camera.x - catPawX;
+                        const dy2 = camera.y - catPawY;
+                        const dist2 = Math.sqrt(dx2*dx2 + dy2*dy2);
+                        if (dist2 > 5) {
+                            catPawX += (dx2 / dist2) * catChaseSpeed;
+                            catPawY += (dy2 / dist2) * catChaseSpeed;
+                            catChaseSpeed += 0.002;
+                        }
+                        if (dist(camera.x, camera.y, catPawX, catPawY) < 35) endGame(2);
+                    }
+                }
+
+                // Копание
+                const nearDeposit = findNearestDeposit();
+                if ((eJustPressed || mobileMinePressed) && !mouse.mining && nearDeposit !== null && mouse.backpack < mouse.maxBackpack) {
+                    mouse.mining = true;
+                    mouse.mineProgress = 0;
+                    mouse.mineTarget = nearDeposit;
+                    mouse.pickaxeSwing = 0;
+                }
+
+                if (mouse.mining) {
+                    mouse.pickaxeSwing += 0.08;
+                    if (mouse.pickaxeSwing > 1) mouse.pickaxeSwing = 0;
+                } else {
+                    mouse.pickaxeSwing = 0;
+                }
+
+                if (mouse.mining) {
+                    const target = cheeseDeposits[mouse.mineTarget];
+                    if (!target || !target.active || target.health <= 0 ||
+                        dist(camera.x, camera.y, target.x, target.y) > target.radius + mouse.radius + 20 ||
+                        mouse.backpack >= mouse.maxBackpack) {
+                        mouse.mining = false;
+                        mouse.mineProgress = 0;
+                        mouse.mineTarget = null;
+                        mouse.pickaxeSwing = 0;
+                    } else {
+                        mouse.mineProgress++;
+                        if (mouse.mineProgress % 3 === 0) {
+                            spawnParticles(target.x + (Math.random()-0.5)*20, target.y + (Math.random()-0.5)*20, 2, '#ffcc00', '#ff9900');
+                        }
+                        if (mouse.mineProgress >= mouse.mineMaxTime) {
+                            target.health -= mouse.strength;
+                            mouse.mineProgress = 0;
+                            if (target.health <= 0) {
+                                target.active = false;
+                                if (target.type === 'big') {
+                                    const dropped = 10 + Math.floor(Math.random() * 6);
+                                    const space = mouse.maxBackpack - mouse.backpack;
+                                    mouse.backpack += Math.min(dropped, space);
+                                    spawnParticles(target.x, target.y, 20, '#ff8844', '#ffaa00');
+                                } else if (target.type === 'boss') {
+                                    const dropped = 70;
+                                    const space = mouse.maxBackpack - mouse.backpack;
+                                    mouse.backpack += Math.min(dropped, space);
+                                    spawnParticles(target.x, target.y, 30, '#ff4444', '#ff0000');
+                                } else {
+                                    if (mouse.backpack < mouse.maxBackpack) mouse.backpack++;
+                                }
+                                totalCheeseBroken++;
+                                spawnParticles(target.x, target.y, 12, '#ffdd44', '#ffaa00');
+                                if (target.type === 'victory') endGame(3);
+                                else depositRespawnTimers[mouse.mineTarget] = DEPOSIT_RESPAWN_TIME;
+                                checkSpecialSpawns();
+                                mouse.mining = false;
+                                mouse.mineTarget = null;
+                                mouse.pickaxeSwing = 0;
+                            }
+                        }
+                    }
+                }
+
+                // Сдача сыра
+                if (dist(camera.x, camera.y, home.x, home.y) < home.radius + mouse.radius + 8 && mouse.backpack > 0) {
+                    const delivered = mouse.backpack;
+                    const earnedCoins = delivered * 5;
+                    mouse.coins += earnedCoins;
+                    mouse.backpack = 0;
+                    mouse.mining = false;
+                    mouse.mineProgress = 0;
+                    mouse.mineTarget = null;
+                    mouse.pickaxeSwing = 0;
+                    coinDisplayEl.textContent = mouse.coins;
+                    if (mouse.coins >= 500 && !gameEnded) endGame(1);
+                }
+
+                for (let i = 0; i < cheeseDeposits.length; i++) {
+                    const dep = cheeseDeposits[i];
+                    if (!dep) continue;
+                    if (!dep.active && depositRespawnTimers[i] > 0 && dep.type === 'normal') {
+                        depositRespawnTimers[i]--;
+                        if (depositRespawnTimers[i] <= 0) spawnDeposit(i, 'normal');
+                    }
+                    if (dep.active) dep.glowPhase += 0.03;
+                }
+
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.08;
+                    p.life--;
+                    if (p.life <= 0) particles.splice(i, 1);
+                }
+
+                for (let i = floatingMessages.length - 1; i >= 0; i--) {
+                    floatingMessages[i].y -= 0.7;
+                    floatingMessages[i].life--;
+                    if (floatingMessages[i].life <= 0) floatingMessages.splice(i, 1);
+                }
+
+                backpackCountEl.textContent = mouse.backpack + ' / ' + mouse.maxBackpack;
+                if (mouse.backpack >= mouse.maxBackpack) backpackStatEl.classList.add('backpack-full');
+                else backpackStatEl.classList.remove('backpack-full');
+
+                eJustPressed = false;
+                mobileMinePressed = false;
+                bJustPressed = false;
+                mobileShopPressed = false;
+            }
+
+            function worldToScreen(wx, wy) {
+                const dx = wx - camera.x;
+                const dy = wy - camera.y;
+                const angleToPoint = Math.atan2(dy, dx);
+                let angleDiff = angleToPoint - camera.angle;
+                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                if (Math.abs(angleDiff) > camera.fov / 2) return null;
+                const screenX = W/2 + Math.tan(angleDiff) * (W/2);
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                return { x: screenX, y: H/2, dist };
+            }
+
+            function drawGround() {
+                const grad = ctx.createRadialGradient(W/2, H/2, 50, W/2, H/2, 700);
+                grad.addColorStop(0, '#5a5a6e');
+                grad.addColorStop(0.7, '#3a3a4a');
+                grad.addColorStop(1, '#1a1a24');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            function drawFogOfWar() {
+                const gradient = ctx.createRadialGradient(W/2, H/2, MOUSE_VISION_RANGE * 0.3, W/2, H/2, MOUSE_VISION_RANGE);
+                gradient.addColorStop(0, 'rgba(0,0,0,0)');
+                gradient.addColorStop(0.4, 'rgba(0,0,0,0.1)');
+                gradient.addColorStop(0.7, 'rgba(0,0,0,0.5)');
+                gradient.addColorStop(0.9, 'rgba(0,0,0,0.8)');
+                gradient.addColorStop(1, 'rgba(0,0,0,0.95)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            function drawStalactite(s) {
+                const pos = worldToScreen(s.x, s.y);
+                if (!pos || pos.dist > MOUSE_VISION_RANGE) return;
+                const scale = clamp(400 / pos.dist, 0.2, 3);
+                const sx = pos.x, sy = pos.y, sr = s.radius * scale;
+                if (sx < -sr*2 || sx > W + sr*2) return;
+                const grad = ctx.createLinearGradient(sx, sy - sr*2, sx, sy + sr*2);
+                grad.addColorStop(0, '#6a6a7a');
+                grad.addColorStop(1, '#3a3a44');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.ellipse(sx, sy - sr*0.5, sr*0.7, sr*1.5, 0, 0, Math.PI*2);
+                ctx.fill();
+            }
+
+            function drawCheese(dep) {
+                if (!dep.active) return;
+                const pos = worldToScreen(dep.x, dep.y);
+                if (!pos || pos.dist > MOUSE_VISION_RANGE) return;
+                const scale = clamp(400 / pos.dist, 0.3, 3);
+                const sx = pos.x, sy = pos.y, sr = dep.radius * scale;
+                if (sx < -sr*2 || sx > W + sr*2) return;
+
+                let cheeseGrad;
+                if (dep.type === 'big') {
+                    cheeseGrad = ctx.createLinearGradient(sx-sr, sy-sr, sx+sr, sy+sr);
+                    cheeseGrad.addColorStop(0, '#ff8844');
+                    cheeseGrad.addColorStop(1, '#cc5500');
+                } else if (dep.type === 'boss') {
+                    cheeseGrad = ctx.createLinearGradient(sx-sr, sy-sr, sx+sr, sy+sr);
+                    cheeseGrad.addColorStop(0, '#ff4444');
+                    cheeseGrad.addColorStop(1, '#990000');
+                } else if (dep.type === 'victory') {
+                    cheeseGrad = ctx.createLinearGradient(sx-sr, sy-sr, sx+sr, sy+sr);
+                    cheeseGrad.addColorStop(0, '#ffdd55');
+                    cheeseGrad.addColorStop(1, '#ddaa00');
+                } else {
+                    cheeseGrad = ctx.createLinearGradient(sx-sr, sy-sr, sx+sr, sy+sr);
+                    cheeseGrad.addColorStop(0, '#ffdd44');
+                    cheeseGrad.addColorStop(1, '#cc8800');
+                }
+                ctx.fillStyle = cheeseGrad;
+                ctx.beginPath();
+                ctx.arc(sx, sy - sr*0.1, sr, 0, Math.PI*2);
+                ctx.fill();
+
+                const healthPercent = dep.health / dep.maxHealth;
+                const barW = sr * 1.2, barH = 4;
+                const barX = sx - barW/2, barY = sy - sr - 8;
+                ctx.fillStyle = '#333';
+                ctx.fillRect(barX-1, barY-1, barW+2, barH+2);
+                ctx.fillStyle = '#ff4444';
+                ctx.fillRect(barX, barY, barW*healthPercent, barH);
+            }
+
+            function drawHome() {
+                const pos = worldToScreen(home.x, home.y);
+                if (!pos || pos.dist > MOUSE_VISION_RANGE) return;
+                const scale = clamp(400 / pos.dist, 0.3, 3);
+                const sx = pos.x, sy = pos.y, sr = home.radius * scale;
+                const holeGrad = ctx.createRadialGradient(sx, sy, sr*0.1, sx, sy, sr);
+                holeGrad.addColorStop(0, '#1a0a00');
+                holeGrad.addColorStop(1, '#4a2a15');
+                ctx.fillStyle = holeGrad;
+                ctx.beginPath();
+                ctx.arc(sx, sy - sr*0.2, sr*0.9, 0, Math.PI*2);
+                ctx.fill();
+            }
+
+            function drawCamera() {
+                if (!securityCamera.active) return;
+                const pos = worldToScreen(securityCamera.x, securityCamera.y);
+                if (!pos || pos.dist > MOUSE_VISION_RANGE) return;
+                const scale = clamp(400 / pos.dist, 0.3, 3);
+                const sx = pos.x, sy = pos.y, sr = securityCamera.radius * scale;
+                ctx.fillStyle = '#333';
+                ctx.fillRect(sx - sr*0.6, sy - sr*0.6, sr*1.2, sr*0.8);
+                const blink = Math.sin(Date.now() / 1000) * 0.3 + 0.7;
+                ctx.fillStyle = `rgba(255, 0, 0, ${blink})`;
+                ctx.beginPath();
+                ctx.arc(sx, sy - sr*0.2, sr*0.25, 0, Math.PI*2);
+                ctx.fill();
+            }
+
+            function drawCatPaw() {
+                if (!catPawVisible && catChaseSpeed <= 0) return;
+                const pos = worldToScreen(catPawX, catPawY);
+                if (!pos || pos.dist > MOUSE_VISION_RANGE) return;
+                const scale = clamp(400 / pos.dist, 0.3, 4);
+                const sx = pos.x, sy = pos.y, sr = 25 * scale;
+                if (catPawVisible) {
+                    const progress = catPawProgress;
+                    ctx.fillStyle = '#ff6600';
+                    ctx.beginPath();
+                    ctx.arc(sx, sy + sr*(1-progress), sr*0.8, 0, Math.PI*2);
+                    ctx.fill();
+                } else {
+                    ctx.fillStyle = '#ff4400';
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, sr, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            }
+
+            function drawPickaxe() {
+                const swing = mouse.pickaxeSwing;
+                const baseX = W - 60;
+                const baseY = H - 60;
+
+                ctx.save();
+                ctx.translate(baseX, baseY);
+
+                const handleAngle = -0.4 + swing * 1.2;
+                ctx.rotate(handleAngle);
+
+                // Уменьшенная кирка
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(-2, -30, 4, 40);
+
+                ctx.fillStyle = '#888';
+                ctx.beginPath();
+                ctx.moveTo(-8, -30);
+                ctx.lineTo(8, -30);
+                ctx.lineTo(3, -38);
+                ctx.lineTo(-3, -38);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = '#aaa';
+                ctx.beginPath();
+                ctx.moveTo(-1, -38);
+                ctx.lineTo(1, -38);
+                ctx.lineTo(0, -42);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.restore();
+
+                if (swing > 0.7) {
+                    ctx.fillStyle = `rgba(255, 200, 50, ${(swing-0.7)/0.3})`;
+                    ctx.font = '14px sans-serif';
+                    ctx.fillText('✨', baseX - 20, baseY - 55);
+                }
+            }
+
+            function drawMiniMap() {
+                const mmW = 150, mmH = 100;
+                const mmX = W - mmW - 10, mmY = H - mmH - 10;
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.fillRect(mmX, mmY, mmW, mmH);
+                const px = mmX + (camera.x / MAP_W) * mmW;
+                const py = mmY + (camera.y / MAP_H) * mmH;
+                ctx.fillStyle = '#00ff00';
+                ctx.beginPath();
+                ctx.arc(px, py, 3, 0, Math.PI*2);
+                ctx.fill();
+
+                const hx = mmX + (home.x / MAP_W) * mmW;
+                const hy = mmY + (home.y / MAP_H) * mmH;
+                ctx.fillStyle = '#ffff00';
+                ctx.beginPath();
+                ctx.arc(hx, hy, 2, 0, Math.PI*2);
+                ctx.fill();
+
+                if (catActive && (catPawVisible || catChaseSpeed > 0)) {
+                    const cx = mmX + (catPawX / MAP_W) * mmW;
+                    const cy = mmY + (catPawY / MAP_H) * mmH;
+                    ctx.fillStyle = '#ff0000';
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 3, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            }
+
+            function drawHUD() {
+                if (mouse.mining) {
+                    const progress = mouse.mineProgress / mouse.mineMaxTime;
+                    const barW = 180, barH = 6;
+                    const barX = W/2 - barW/2, barY = H/2 + 35;
+                    ctx.fillStyle = '#333';
+                    ctx.fillRect(barX, barY, barW, barH);
+                    ctx.fillStyle = '#ffaa00';
+                    ctx.fillRect(barX, barY, barW*progress, barH);
+                }
+                if (catAlerted && !catPawVisible && catChaseSpeed > 0) {
+                    const alpha = Math.sin(Date.now() / 200) * 0.3 + 0.7;
+                    ctx.fillStyle = `rgba(255, 0, 0, ${alpha})`;
+                    ctx.font = 'bold 20px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('⚠️ КОТ БЛИЗКО!', W/2, 50);
+                }
+            }
+
+            function drawEndScreen() {
+                if (endingType === 1) {
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, W, H);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 28px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('ПОБЕДА!', W/2, H/2);
+                    ctx.fillText('Нажмите Q для перезапуска', W/2, H/2 + 40);
+                } else if (endingType === 3) {
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, W, H);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 32px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('ТЕПЕРЬ Я ЗНАЮ КТО Я!', W/2, H/2);
+                    ctx.fillText('Нажмите Q для перезапуска', W/2, H/2 + 40);
+                }
+            }
+
+            function drawShop() {
+                if (!shopOpen || gameEnded) return;
+                ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = '#2a2a3a';
+                ctx.fillRect(W/2-160, H/2-120, 320, 250);
+                ctx.strokeStyle = '#ffcc00';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(W/2-160, H/2-120, 320, 250);
+                ctx.fillStyle = '#ffcc00';
+                ctx.font = 'bold 20px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('🏪 МАГАЗИН', W/2, H/2-85);
+
+                const strengthCost = getUpgradeCost(mouse.strengthLevel);
+                const capacityCost = getUpgradeCost(mouse.capacityLevel);
+                ctx.font = '14px sans-serif';
+                ctx.fillStyle = '#fff';
+                ctx.fillText(`💰 Монеты: ${mouse.coins}`, W/2, H/2-50);
+
+                const btn1X = W/2-130, btn1Y = H/2-15;
+                ctx.fillStyle = mouse.coins >= strengthCost ? '#5a5aee' : '#444';
+                ctx.fillRect(btn1X, btn1Y, 260, 40);
+                ctx.fillStyle = '#fff';
+                ctx.fillText(`💪 Сила (${strengthCost}💰)`, W/2, btn1Y+28);
+
+                const btn2Y = H/2+40;
+                ctx.fillStyle = mouse.coins >= capacityCost ? '#5a5aee' : '#444';
+                ctx.fillRect(btn1X, btn2Y, 260, 40);
+                ctx.fillText(`🎒 Рюкзак (${capacityCost}💰)`, W/2, btn2Y+28);
+
+                ctx.fillText('Нажми B чтобы закрыть', W/2, H/2+105);
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, W, H);
+                drawGround();
+
+                const objects = [];
+                for (const s of stalactites) objects.push({ type: 's', obj: s, dist: dist(camera.x, camera.y, s.x, s.y) });
+                for (const dep of cheeseDeposits) if (dep && dep.active) objects.push({ type: 'c', obj: dep, dist: dist(camera.x, camera.y, dep.x, dep.y) });
+                objects.push({ type: 'h', dist: dist(camera.x, camera.y, home.x, home.y) });
+                if (securityCamera.active) objects.push({ type: 'cam', dist: dist(camera.x, camera.y, securityCamera.x, securityCamera.y) });
+                if (catPawVisible || catChaseSpeed > 0) objects.push({ type: 'cat', dist: dist(camera.x, camera.y, catPawX, catPawY) });
+
+                objects.sort((a, b) => b.dist - a.dist);
+
+                for (const obj of objects) {
+                    if (obj.dist > MOUSE_VISION_RANGE) continue;
+                    switch (obj.type) {
+                        case 's': drawStalactite(obj.obj); break;
+                        case 'c': drawCheese(obj.obj); break;
+                        case 'h': drawHome(); break;
+                        case 'cam': drawCamera(); break;
+                        case 'cat': drawCatPaw(); break;
+                    }
+                }
+
+                drawFogOfWar();
+                drawPickaxe();
+                drawHUD();
+                drawMiniMap();
+                if (gameEnded) drawEndScreen();
+                drawShop();
+            }
+
+            function gameLoop() {
+                if (!gameEnded || endingType === 0) update();
+                draw();
+                requestAnimationFrame(gameLoop);
+            }
+
+            // Управление с клавиатуры
+            window.addEventListener('keydown', (e) => {
+                if (gameEnded) {
+                    if (e.code === 'KeyQ') resetGame();
+                    return;
+                }
+                keys[e.code] = true;
+                if (e.code === 'KeyE') { e.preventDefault(); eJustPressed = true; }
+                if (e.code === 'KeyB') { e.preventDefault(); shopOpen = !shopOpen; }
+                if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
+            });
+            window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+            // Мобильное управление
+            const joystick = document.getElementById('mobileJoystick');
+            const knob = document.getElementById('joystickKnob');
+            const mineBtn = document.getElementById('mineBtn');
+            const shopBtn = document.getElementById('shopBtn');
+
+            if (joystick) {
+                joystick.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    mobileJoystickActive = true;
+                });
+                joystick.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const rect = joystick.getBoundingClientRect();
+                    const centerX = rect.left + rect.width/2;
+                    const centerY = rect.top + rect.height/2;
+                    mobileJoystickDX = touch.clientX - centerX;
+                    mobileJoystickDY = touch.clientY - centerY;
+                    const maxDist = 40;
+                    const dist = Math.sqrt(mobileJoystickDX**2 + mobileJoystickDY**2);
+                    if (dist > maxDist) {
+                        mobileJoystickDX = mobileJoystickDX / dist * maxDist;
+                        mobileJoystickDY = mobileJoystickDY / dist * maxDist;
+                    }
+                    knob.style.transform = `translate(calc(-50% + ${mobileJoystickDX}px), calc(-50% + ${mobileJoystickDY}px))`;
+                });
+                joystick.addEventListener('touchend', () => {
+                    mobileJoystickActive = false;
+                    mobileJoystickDX = 0;
+                    mobileJoystickDY = 0;
+                    knob.style.transform = 'translate(-50%, -50%)';
+                });
+            }
+
+            if (mineBtn) {
+                mineBtn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    mobileMinePressed = true;
+                });
+            }
+
+            if (shopBtn) {
+                shopBtn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    shopOpen = !shopOpen;
+                });
+            }
+
+            // Клики в магазине
+            canvas.addEventListener('click', (e) => {
+                if (gameEnded || !shopOpen) return;
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = W / rect.width;
+                const scaleY = H / rect.height;
+                const clickX = (e.clientX - rect.left) * scaleX;
+                const clickY = (e.clientY - rect.top) * scaleY;
+
+                const strengthCost = getUpgradeCost(mouse.strengthLevel);
+                const capacityCost = getUpgradeCost(mouse.capacityLevel);
+                const btn1X = W/2-130, btn1Y = H/2-15;
+
+                if (clickX >= btn1X && clickX <= btn1X+260 && clickY >= btn1Y && clickY <= btn1Y+40 && mouse.coins >= strengthCost) {
+                    mouse.coins -= strengthCost;
+                    mouse.strengthLevel++;
+                    recalcStats();
+                    coinDisplayEl.textContent = mouse.coins;
+                }
+                const btn2Y = H/2+40;
+                if (clickX >= btn1X && clickX <= btn1X+260 && clickY >= btn2Y && clickY <= btn2Y+40 && mouse.coins >= capacityCost) {
+                    mouse.coins -= capacityCost;
+                    mouse.capacityLevel++;
+                    recalcStats();
+                    coinDisplayEl.textContent = mouse.coins;
+                }
+            });
+
+            initDeposits();
+            generateStalactites();
+            recalcStats();
+            coinDisplayEl.textContent = '0';
+            gameLoop();
+        }
+    </script>
+</body>
+</html>
